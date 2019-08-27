@@ -1,6 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 
+const moment = require('moment');
+
 const currencies = [
   'GBP',
   'HKD',
@@ -35,6 +37,11 @@ const currencies = [
   'HUF',
   'AUD'
 ];
+
+const URL =
+  process.env.NODE_ENV === 'production'
+    ? ''
+    : 'http://localhost:5000/api/rates';
 
 class home extends React.Component {
   constructor(props) {
@@ -165,13 +172,6 @@ class home extends React.Component {
   };
 
   render() {
-    // render and display two things:
-    // two inputs are needed: date (yyyy-dd-mm) and base (GBP or USD)
-    // base and date has to change depending on the user inputs
-    // display three things
-    // option to choose either GBP or USD
-    // input box for user to input certain date
-    // submit button
     return (
       <div>
         <select onChange={this.onSelect}>
@@ -185,7 +185,9 @@ class home extends React.Component {
           value={this.state.date}
           onChange={this.handleSubmitChange}
           placeholder="yyyy-mm-dd"
+          max={this.state.date}
         />
+        {console.log(moment().isValid())}
         <br></br>
         <button onClick={this.sortLowMax}>Low-max Exchange Rate</button>
         <button onClick={this.sortMaxLow}>Max-low Exchange Rate</button>
