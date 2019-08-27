@@ -33,7 +33,7 @@ class home extends React.Component {
     const base = this.state.base;
     const date = this.state.date;
 
-    postNewRate({});
+    // postNewRate({});
   };
 
   // this function is needed so base and date changes
