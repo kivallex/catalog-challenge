@@ -1,5 +1,40 @@
 import React from 'react';
-import Dropdown from 'react-dropdown';
+import axios from 'axios';
+
+const currencies = [
+  'GBP',
+  'HKD',
+  'IDR',
+  'ILS',
+  'DKK',
+  'INR',
+  'CHF',
+  'MXN',
+  'CZK',
+  'SGD',
+  'THB',
+  'HRK',
+  'MYR',
+  'NOK',
+  'CNY',
+  'BGN',
+  'PHP',
+  'SEK',
+  'PLN',
+  'ZAR',
+  'CAD',
+  'ISK',
+  'BRL',
+  'RON',
+  'NZD',
+  'TRY',
+  'JPY',
+  'RUB',
+  'KRW',
+  'USD',
+  'HUF',
+  'AUD'
+];
 
 class home extends React.Component {
   constructor(props) {
@@ -7,77 +42,171 @@ class home extends React.Component {
     // what do i have to display on the home page?
     this.state = {
       // base = USD/GBP
-      base: '',
+      base: 'USD',
       baseOption: ['USD', 'GBP'],
+      rates: [],
       // date = yyyy-dd-mm
-      date: ''
+      date: new Date().toISOString().slice(0, 10)
     };
-    this.onSelect = this.onSelect.bind(this);
-    this.handleSubmitChange = this.handleChange.bind(this);
   }
 
-  async onSelect(base) {
-    this.setState({
-      ...this.state,
-      base: base.value
+  async componentDidMount() {
+    // call data right away to client
+    const response = await axios.get(
+      'http://localhost:5000/api/rates?date=' +
+        this.state.date +
+        '&base=' +
+        this.state.base
+    );
+    const rates = [];
+    currencies.forEach(base => {
+      // pushing all the exchange rates ex. {USD: 1.2}
+      rates.push({ [base]: response.data.rates[base] });
     });
+    this.setState({ rates });
   }
 
-  handleSubmitChange = ({ target }) => {
+  sortAscending = () => {
+    const { rates } = this.state;
+    // sort depending on the country
+    rates.sort((a, b) => {
+      const base1 = Object.keys(a)[0];
+      const base2 = Object.keys(b)[0];
+
+      return base1.localeCompare(base2);
+    });
+    this.setState({ rates });
+  };
+
+  sortDescending = () => {
+    const { rates } = this.state;
+    // sorting depending on the country
+    rates
+      .sort((a, b) => {
+        const base1 = Object.keys(a)[0];
+        const base2 = Object.keys(b)[0];
+
+        return base1.localeCompare(base2);
+      })
+      .reverse();
+    this.setState({ rates });
+  };
+
+  sortLowMax = () => {
+    const { rates } = this.state;
+    // this has to sort depending on the exchange rate lowest goes first
+    rates.sort((a, b) => {
+      const value1 = Object.values(a)[0];
+      const value2 = Object.values(b)[0];
+
+      return value1 - value2;
+    });
+    this.setState({ rates });
+  };
+
+  sortMaxLow = () => {
+    const { rates } = this.state;
+    // this has to sort depending on the exchange rate highest rate goes first
+    // find how to get rates' exchange rates
+    rates
+      .sort((a, b) => {
+        const value1 = Object.values(a)[0];
+        const value2 = Object.values(b)[0];
+
+        return value1 - value2;
+      })
+      .reverse();
+    this.setState({ rates });
+  };
+
+  // selecting USD or GBP
+  onSelect = async ({ target }) => {
+    // need api call as well
+    const base = target.value;
+    const response = await axios.get(
+      'http://localhost:5000/api/rates?date=' +
+        this.state.date +
+        '&base=' +
+        base
+    );
+
+    const rates = [];
+    currencies.forEach(base => {
+      // pushing all the exchange rates ex. {USD: 1.2}
+      rates.push({ [base]: response.data.rates[base] });
+    });
+
     this.setState({
-      date: target.value
+      base,
+      rates
     });
   };
 
-  submitData = async () => {
-    const base = this.state.base;
-    const date = this.state.date;
+  handleSubmitChange = async ({ target }) => {
+    // inputting new date
+    const date = new Date(target.value).toISOString().slice(0, 10);
+    const response = await axios.get(
+      'http://localhost:5000/api/rates?date=' +
+        date +
+        '&base=' +
+        this.state.base
+    );
 
-    // postNewRate({});
+    const rates = [];
+    currencies.forEach(base => {
+      // pushing all the exchange rates ex. {USD: 1.2}
+      rates.push({ [base]: response.data.rates[base] });
+    });
+
+    this.setState({
+      date,
+      rates
+    });
   };
-
-  // this function is needed so base and date changes
-  // handleSubmit = e => {
-  //   e.preventDefault(); this prevents your browser from reloading
-  //   const base = this.state.base;
-  //   const date = this.state.date;
-
-  //   update base and date
-  // };
 
   render() {
     // render and display two things:
     // two inputs are needed: date (yyyy-dd-mm) and base (GBP or USD)
     // base and date has to change depending on the user inputs
-    // let base = this.state.base;
-    // let date = this.state.date;
-
     // display three things
     // option to choose either GBP or USD
     // input box for user to input certain date
     // submit button
     return (
       <div>
-        <form onSubmit={this.onSubmit}>
-          <Dropdown
-            options={this.state.baseOption}
-            onChange={this.onSelect}
-            value={this.state.base}
-            placeholder="Select base currency"
-          />
-          <input
-            type="date"
-            value={this.state.date}
-            onChange={this.handleSubmitChange}
-            placeholder="yyyy-dd-mm"
-            required
-            pattern="(?:19|20)[0-9]{2}-(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:30))|(?:(?:0[13578]|1[02])-31))-(?:(?:0[1-9]|1[0-2])"
-            title="Enter a date in this format YYYY-DD-MM"
-          />
-          <button type="submit" onClick={this.submitData}>
-            Submit
-          </button>
-        </form>
+        <select onChange={this.onSelect}>
+          {this.state.baseOption.map(option => (
+            <option selected={option === this.state.base}> {option} </option>
+          ))}
+        </select>
+        <br></br>
+        <input
+          type="date"
+          value={this.state.date}
+          onChange={this.handleSubmitChange}
+          placeholder="yyyy-mm-dd"
+        />
+        <br></br>
+        <button onClick={this.sortLowMax}>Low-max Exchange Rate</button>
+        <button onClick={this.sortMaxLow}>Max-low Exchange Rate</button>
+        <button onClick={this.sortAscending}>Currency name ASC</button>
+        <button onClick={this.sortDescending}>Currency name DESC</button>
+        <table>
+          <tbody>
+            <tr>
+              <td>Currency</td>
+              <td>Exchange Rate</td>
+            </tr>
+            {console.log(this.state.rates)}
+            {this.state.rates.map(item => (
+              <tr>
+                {console.log(item)}
+                <td>{Object.keys(item)[0]}</td>
+                <td>{Object.values(item)[0].toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }
