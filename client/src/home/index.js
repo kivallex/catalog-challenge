@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-
-const moment = require('moment');
+import moment from 'moment';
 
 const currencies = [
   'GBP',
@@ -38,10 +37,7 @@ const currencies = [
   'AUD'
 ];
 
-const URL =
-  process.env.NODE_ENV === 'production'
-    ? ''
-    : 'http://localhost:5000/api/rates';
+const URL = 'http://localhost:5000/api/rates?date=';
 
 class home extends React.Component {
   constructor(props) {
@@ -60,10 +56,7 @@ class home extends React.Component {
   async componentDidMount() {
     // call data right away to client
     const response = await axios.get(
-      'http://localhost:5000/api/rates?date=' +
-        this.state.date +
-        '&base=' +
-        this.state.base
+      URL + this.state.date + '&base=' + this.state.base
     );
     const rates = [];
     currencies.forEach(base => {
@@ -130,12 +123,7 @@ class home extends React.Component {
   onSelect = async ({ target }) => {
     // need api call as well
     const base = target.value;
-    const response = await axios.get(
-      'http://localhost:5000/api/rates?date=' +
-        this.state.date +
-        '&base=' +
-        base
-    );
+    const response = await axios.get(URL + this.state.date + '&base=' + base);
 
     const rates = [];
     currencies.forEach(base => {
@@ -152,12 +140,7 @@ class home extends React.Component {
   handleSubmitChange = async ({ target }) => {
     // inputting new date
     const date = new Date(target.value).toISOString().slice(0, 10);
-    const response = await axios.get(
-      'http://localhost:5000/api/rates?date=' +
-        date +
-        '&base=' +
-        this.state.base
-    );
+    const response = await axios.get(URL + date + '&base=' + this.state.base);
 
     const rates = [];
     currencies.forEach(base => {
@@ -176,7 +159,7 @@ class home extends React.Component {
       <div>
         <select onChange={this.onSelect}>
           {this.state.baseOption.map(option => (
-            <option selected={option === this.state.base}> {option} </option>
+            <option value={option === this.state.base}>{option}</option>
           ))}
         </select>
         <br></br>
@@ -184,10 +167,8 @@ class home extends React.Component {
           type="date"
           value={this.state.date}
           onChange={this.handleSubmitChange}
-          placeholder="yyyy-mm-dd"
-          max={this.state.date}
+          max={moment().max(moment())}
         />
-        {console.log(moment().isValid())}
         <br></br>
         <button onClick={this.sortLowMax}>Low-max Exchange Rate</button>
         <button onClick={this.sortMaxLow}>Max-low Exchange Rate</button>
