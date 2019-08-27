@@ -159,7 +159,7 @@ class home extends React.Component {
       <div>
         <select onChange={this.onSelect}>
           {this.state.baseOption.map(option => (
-            <option value={option === this.state.base}>{option}</option>
+            <option value={option}>{option}</option>
           ))}
         </select>
         <br></br>
@@ -182,10 +182,8 @@ class home extends React.Component {
               <td>Currency</td>
               <td>Exchange Rate</td>
             </tr>
-            {console.log(this.state.rates)}
             {this.state.rates.map(item => (
               <tr>
-                {console.log(item)}
                 <td>{Object.keys(item)[0]}</td>
                 <td>{Object.values(item)[0].toFixed(2)}</td>
               </tr>
