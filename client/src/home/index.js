@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -167,7 +167,9 @@ class home extends React.Component {
           type="date"
           value={this.state.date}
           onChange={this.handleSubmitChange}
-          max={moment().max(moment())}
+          max={moment()
+            .toISOString()
+            .slice(0, 10)}
         />
         <br></br>
         <button onClick={this.sortLowMax}>Low-max Exchange Rate</button>
